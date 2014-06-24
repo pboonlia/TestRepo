@@ -1,4 +1,4 @@
- <project name="AcordXMLGen"  basedir="." default="dist">
+<project name="AcordXMLGen"  basedir="." default="dist">
 	
 	<property environment="env"/>
 	
