@@ -1,0 +1,97 @@
+<project name="AcordXMLGen"  basedir="." default="dist">
+	
+	<property environment="env"/>
+	
+	<property file="build.properties" />
+	
+	<target name="dist" depends="init, compile, jar, war" />
+	
+	<target name="svn">
+		<echo message="Check latest source by hudson"/>	
+	</target>
+	
+	<target name="clean" description="Clean all generated files">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${output.dir}" />
+	</target>
+	
+	
+	<target name="init">
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${build.dir}" />
+	</target>
+	
+
+	<path id="lib.class.path.required" description="libraries needed in classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>	
+			
+	</path>
+		
+	<target name="compile" depends="init" description="Compile the source code">
+		
+	<echo message="Compiling handlers ..."/>	
+		<javac destdir="${build.dir}" classpathref="lib.class.path.required" debug="true"
+			 memoryMaximumSize="${memory.maximum.size}" memoryInitialSize="${memory.initial.size}" fork="true" source="${build.javac.source}" target="${build.javac.target}">
+			<src path="${src.dir}" />
+			<include name="com/csc/xmlgen/handlers/**"/>
+			<compilerarg value="${compilerarg}" />
+		</javac>
+	
+	<echo message="Compiling servlet ..."/>	
+		<javac destdir="${build.dir}" classpathref="lib.class.path.required" debug="true"
+			 memoryMaximumSize="${memory.maximum.size}" memoryInitialSize="${memory.initial.size}" fork="true" source="${build.javac.source}" target="${build.javac.target}">
+			<src path="${src.dir}" />
+			<include name="com/csc/xmlgen/servlet/**"/>
+			<compilerarg value="${compilerarg}" />
+		</javac>
+	
+	<echo message="Compiling util ..."/>	
+		<javac destdir="${build.dir}" classpathref="lib.class.path.required" debug="true"
+			 memoryMaximumSize="${memory.maximum.size}" memoryInitialSize="${memory.initial.size}" fork="true" source="${build.javac.source}" target="${build.javac.target}">
+			<src path="${src.dir}" />
+			<include name="com/csc/xmlgen/util/**"/>
+			<compilerarg value="${compilerarg}" />
+		</javac>
+				
+	</target>
+		
+	<target name="jar" depends="" description="Generate XMLgen Jar">
+		<delete file="${dist.dir}/${base.dist.jar.file}" />
+		<echo message="Packaging  XML generator JAR file..."/>
+		
+		<jar destfile="${dist.dir}/${base.dist.jar.file}" duplicate="preserve" update="false" >
+		    <fileset dir="${build.dir}" excludes="${exclude.files}" />
+			<!-- Harvest package has version file at root folder -->
+			<zipfileset dir="." includes="${build.version.file}" fullpath="META-INF/${build.version.file}"/>
+			<zipfileset dir="." includes="${dist.dir}/${build.version.file}" fullpath="META-INF/${build.version.file}"/>
+		</jar>
+	</target>
+	
+	<target name="version" depends="init" description="Generate version.txt for the component">
+		<exec executable="${svn.executable}" output="svnInfo.xml" failonerror="false" append="false">
+			<arg value="info"/>
+			<arg value="--xml"/>
+		</exec>
+		<xmlproperty file="svnInfo.xml" collapseAttributes="true"/>
+		<delete file="svnInfo.xml" />
+		<echo file="${dist.dir}/${build.version.file}" append="false">${build.version.prefix}${info.entry.commit.revision}</echo>
+	</target>
+
+	<!--  ZIP up the files in the WAR project's WebContent folder. -->
+	<target name="war">
+			<copy todir="${lib.dir}">
+				<fileset dir="${dist.dir}" includes="*.jar"/>
+			</copy>
+		<zip basedir="${war.dir}" zipfile="${dist.dir}/XmlGenerator.war">
+			<include name="**/*.*" />
+		</zip>
+	</target>
+
+	
+
+
+	
+</project>
